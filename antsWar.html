@@ -18,7 +18,7 @@ phina.globalize();
 var ASSETS = {
   image: {
     bg: 'images/bg.jpeg',
-
+    menu: 'images/menu.png',
   },
 };
 
@@ -32,12 +32,26 @@ phina.define('MainScene', {
     this.backgroundColor = '#444';
     // 背景を生成
     this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+    // メニューボタン生成
+    this.menu = Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+
 
   },
 });
 
  /*
  * バックグラウンド
+ */
+phina.define('Background', {
+  superClass: 'DisplayElement',
+
+  init: function() {
+    this.superInit();
+  },
+});
+
+ /*
+ * メニューボタン
  */
 phina.define('Background', {
   superClass: 'DisplayElement',
