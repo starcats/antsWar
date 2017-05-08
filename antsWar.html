@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset='utf-8' />
-    <title>Particle | phina.js</title>
+    <title>antsWar</title>
   </head>
   <body>
   </body>
@@ -15,20 +15,38 @@
 // グローバルに展開
 phina.globalize();
 
+var ASSETS = {
+  image: {
+    bg: 'images/bg.jpeg',
+
+  },
+};
+
 // MainScene クラスを定義
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   init: function() {
     this.superInit();
+    this.width = 640;
     // 背景色を指定
     this.backgroundColor = '#444';
-    // ラベルを生成
-    this.label = Label('Hello, phina.js!').addChildTo(this);
-    this.label.x = this.gridX.center(); // x 座標
-    this.label.y = this.gridY.center(); // y 座標
-    this.label.fill = 'white'; // 塗りつぶし色
+    // 背景を生成
+    this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+
   },
 });
+
+ /*
+ * バックグラウンド
+ */
+phina.define('Background', {
+  superClass: 'DisplayElement',
+
+  init: function() {
+    this.superInit();
+  },
+});
+
 /*
  * メイン処理
  */
@@ -36,6 +54,7 @@ phina.main(function() {
   // アプリケーションを生成
   var app = GameApp({
     startLabel: 'main', // MainScene から開始
+    assets: ASSETS,
   });
 
   // 実行
