@@ -19,6 +19,7 @@ var ASSETS = {
   image: {
     bg: 'images/bg.jpeg',
     menu: 'images/menu.png',
+    ant: 'images/ant.png',
   },
 };
 
@@ -33,33 +34,37 @@ phina.define('MainScene', {
     // 背景を生成
     this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
     // メニューボタン生成
-    this.menu = Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
-
-
+    this.menu = menuButton().addChildTo(this);
+    // アリ生成
+    this.ant = ant().addChildTo(this);
   },
 });
 
- /*
- * バックグラウンド
- */
-phina.define('Background', {
-  superClass: 'DisplayElement',
-
-  init: function() {
-    this.superInit();
-  },
-});
 
  /*
  * メニューボタン
  */
-phina.define('Background', {
+phina.define('menuButton', {
   superClass: 'DisplayElement',
 
   init: function() {
     this.superInit();
+    Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
   },
 });
+
+ /*
+ * アリさん
+ */
+phina.define('ant', {
+  superClass: 'DisplayElement',
+
+  init: function() {
+    this.superInit();
+    Sprite('ant',60,60).addChildTo(this).setOrigin(0,0).setPosition(340,250);
+  },
+});
+
 
 /*
  * メイン処理
