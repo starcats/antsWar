@@ -49,7 +49,23 @@ phina.define('menuButton', {
 
   init: function() {
     this.superInit();
+    //メニュー背景
     Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    //ボタン
+    var antButton = Button({
+      text: '餌をとりに行く',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this);
+    antButton.x = 480;
+    antButton.y = 645;
+    
+    antButton.on('click', function() {
+      this.exit({nextLabel: "main"});
+    }.bind(this));
   },
 });
 
