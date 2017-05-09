@@ -17,6 +17,7 @@ phina.globalize();
 
 var quest1Time = 1;//秒
 var fps = 30;
+var foodCount = 0;
 var foodFlag = 0;
   //  foodFlag 説明
   //  0: 消える デフォルト
@@ -72,7 +73,12 @@ phina.define('MainScene', {
     this.menu = menuButton().addChildTo(this);
     // アリ生成
     this.ant = ant().addChildTo(this);
-    
+    // ラベル表示
+    this.food = Label({
+      text: '',
+      fill: 'white',
+      fontSize: 30,
+    }).addChildTo(this).setPosition(320,50);
     // // テストスプライト画像作成
     // var sprite = Sprite('test', 64, 64).addChildTo(this);
     // // スプライトにフレームアニメーションをアタッチ
@@ -87,7 +93,8 @@ phina.define('MainScene', {
     if (foodFlag === 2) {
       FOOD().addChildTo(this);//餌を探しに行った時餌出現
     }
-  }
+    this.food.text = "餌を集めた数: " + foodCount;　
+  },
 });
 
 
@@ -168,11 +175,13 @@ phina.define('ant', {
       foodFlag = 4;
       this.ant.tweener.moveTo(100,100,3000)
         .call(function() {
-          //餌の回収完了
           foodFlag = 0;
-          console.log('finish');
         })
         .moveTo(300,300,3000)
+        .call(function() {
+          //餌の回収完了
+          foodCount++;
+        })
         .play();
     }
   },
