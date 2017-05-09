@@ -18,6 +18,12 @@ phina.globalize();
 var quest1Time = 1;//秒
 var fps = 30;
 var foodFlag = 0;
+  //  foodFlag 説明
+  //  0: 消える デフォルト
+  //  1: 餌を探しに行くを押すと1になる
+  //  2: クエストが終了すると2になり餌出現
+  //  3: 3の時に回収するを押すとアリが回収しに行く
+  //  4: 回収アクションが重複しないように
 
 var ASSETS = {
   image: {
@@ -25,7 +31,8 @@ var ASSETS = {
     menu: 'images/menu.png',
     ant: 'images/ant.png',
     test: 'images/test.png',
-    food: 'images/sakuranbo.png'
+    food: 'images/sakuranbo.png',
+    suana: 'images/suana.png',
   },
   // // スプライトシート
   // spritesheet: {
@@ -60,6 +67,7 @@ phina.define('MainScene', {
     this.backgroundColor = '#444';
     // 背景を生成
     this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+    this.suana = Sprite('suana',100,100).addChildTo(this).setPosition(300,300);
     // メニューボタン生成
     this.menu = menuButton().addChildTo(this);
     // アリ生成
@@ -76,7 +84,7 @@ phina.define('MainScene', {
     // sprite.y = this.gridY.center();
   },
   update: function() {
-    if (foodFlag === 3) {
+    if (foodFlag === 2) {
       FOOD().addChildTo(this);//餌を探しに行った時餌出現
     }
   }
@@ -96,7 +104,7 @@ phina.define('menuButton', {
     
     //餌を探しに行くボタン
     var feedButton = Button({
-      text: '餌を探しに行く',
+      text: '餌を探す',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
@@ -106,7 +114,7 @@ phina.define('menuButton', {
     //ボタンを押した時クエストバー出現
     feedButton.on('click', function() {
       questBar(20,645).addChildTo(this);
-      foodFlag = 2;
+      foodFlag = 1;
     }.bind(this));
 
     //餌を回収するボタン
@@ -121,8 +129,8 @@ phina.define('menuButton', {
     //ボタンを押した時クエストバー出現
     antButton.on('click', function() {
       questBar(20,735).addChildTo(this);
-      if (foodFlag === 3) {
-        foodFlag = 4;
+      if (foodFlag === 2) {
+        foodFlag = 3;
       }
     }.bind(this));
   },
@@ -156,8 +164,8 @@ phina.define('ant', {
       this.vy *= -1;
     }
     // 餌が出現してたら餌を回収しに行く
-    if (foodFlag === 4) {
-      foodFlag = 5;
+    if (foodFlag === 3) {
+      foodFlag = 4;
       this.ant.tweener.moveTo(100,100,3000)
         .call(function() {
           //餌の回収完了
@@ -209,8 +217,8 @@ phina.define('questBar', {
     if (this.bar.width >= 300) {
       this.bar.width = 300;
       this.remove();
-      if (foodFlag === 2) {
-        foodFlag = 3;//餌を出現させる
+      if (foodFlag === 1) {
+        foodFlag = 2;//餌を出現させる
       }
     }
   },
