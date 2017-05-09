@@ -23,7 +23,29 @@ var ASSETS = {
     bg: 'images/bg.png',
     menu: 'images/menu.png',
     ant: 'images/ant.png',
+    test: 'images/test.png',
   },
+  // スプライトシート
+  spritesheet: {
+    "test_ss":
+    {
+      // フレーム情報
+      "frame": {
+        "width": 64, // 1フレームの画像サイズ（横）
+        "height": 64, // 1フレームの画像サイズ（縦）
+        "cols": 6, // フレーム数（横）
+        "rows": 3, // フレーム数（縦）
+      },
+      // アニメーション情報
+      "animations" : {
+        "walk": { // アニメーション名
+          "frames": [12,13,14], // フレーム番号範囲
+          "next": "walk", // 次のアニメーション
+          "frequency": 2, // アニメーション間隔
+        },
+      }
+    },
+  }
 };
 
 // MainScene クラスを定義
@@ -40,6 +62,16 @@ phina.define('MainScene', {
     this.menu = menuButton().addChildTo(this);
     // アリ生成
     this.ant = ant().addChildTo(this);
+    
+    // テストスプライト画像作成
+    var sprite = Sprite('test', 64, 64).addChildTo(this);
+    // スプライトにフレームアニメーションをアタッチ
+    var anim = FrameAnimation('test_ss').attachTo(sprite);
+    // アニメーションを指定
+    anim.gotoAndPlay('walk');
+    // 初期位置
+    sprite.x = this.gridX.center();
+    sprite.y = this.gridY.center();
   },
 });
 
@@ -92,12 +124,30 @@ phina.define('ant', {
 
   init: function() {
     this.superInit();
-    Sprite('ant',60,60).addChildTo(this).setOrigin(0,0).setPosition(340,250);
+    // ランダムに歩く
+    this.vx = Random.randint(-3, 3);
+    this.vy = Random.randint(-3, 3);
+    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(340,250);
+    
+  },
+
+  update: function(app) {
+    this.ant.x += this.vx;
+    this.ant.y += this.vy;
+    // 画面端との判定
+    if (this.ant.left < 0 || 640 < this.ant.right) {
+      // 速度を反転する
+      this.vx *= -1;
+    }
+    if (this.ant.top < 0 || 600 < this.ant.bottom) {
+      // 速度を反転する
+      this.vy *= -1;
+    }
   },
 });
 
  /*
- * バー
+ * クエスト進捗バー
  */
 phina.define('questBar', {
   superClass: 'DisplayElement',
