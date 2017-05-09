@@ -15,9 +15,12 @@
 // グローバルに展開
 phina.globalize();
 
+var quest1Time = 10;//秒
+var fps = 30;
+
 var ASSETS = {
   image: {
-    bg: 'images/bg.jpeg',
+    bg: 'images/bg.png',
     menu: 'images/menu.png',
     ant: 'images/ant.png',
   },
@@ -51,20 +54,32 @@ phina.define('menuButton', {
     this.superInit();
     //メニュー背景
     Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
-    //ボタン
-    var antButton = Button({
-      text: '餌をとりに行く',
+    //餌を探しに行くボタン
+    var feedButton = Button({
+      text: '餌を探しに行く',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this);
-    antButton.x = 480;
-    antButton.y = 645;
-    
+    }).addChildTo(this).setPosition(480,645);
+    //ボタンを押した時クエストバー出現
+    feedButton.on('click', function() {
+      questBar(20,645).addChildTo(this);
+    }.bind(this));
+
+    //餌を回収するボタン
+    var antButton = Button({
+      text: '餌を回収する',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this).setPosition(480,735);
+    //ボタンを押した時クエストバー出現
     antButton.on('click', function() {
-      this.exit({nextLabel: "main"});
+      questBar(20,735).addChildTo(this);
     }.bind(this));
   },
 });
@@ -81,6 +96,31 @@ phina.define('ant', {
   },
 });
 
+ /*
+ * バー
+ */
+phina.define('questBar', {
+  superClass: 'DisplayElement',
+  init: function(x,y) {
+    this.superInit();
+    this.bar = Shape().addChildTo(this).setOrigin(0,0.5);
+    this.bar.x = x;
+    this.bar.y = y;
+    this.bar.width = 0;
+    this.bar.maxWidth = 300;
+    this.bar.height = 40;
+    this.count = 0
+
+  },
+  update: function(app) {
+    this.bar.width += this.bar.maxWidth / fps / quest1Time;
+    if (this.bar.width >= 300) {
+      this.bar.width = 300;
+      this.remove();
+    }
+  },
+});
+
 
 /*
  * メイン処理
@@ -91,7 +131,7 @@ phina.main(function() {
     startLabel: 'main', // MainScene から開始
     assets: ASSETS,
   });
-
+  app.fps = fps;
   // 実行
   app.run();
 });
