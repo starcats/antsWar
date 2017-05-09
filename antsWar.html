@@ -15,8 +15,9 @@
 // グローバルに展開
 phina.globalize();
 
-var quest1Time = 10;//秒
+var quest1Time = 1;//秒
 var fps = 30;
+var foodFlag = 0;
 
 var ASSETS = {
   image: {
@@ -24,28 +25,29 @@ var ASSETS = {
     menu: 'images/menu.png',
     ant: 'images/ant.png',
     test: 'images/test.png',
+    food: 'images/sakuranbo.png'
   },
-  // スプライトシート
-  spritesheet: {
-    "test_ss":
-    {
-      // フレーム情報
-      "frame": {
-        "width": 64, // 1フレームの画像サイズ（横）
-        "height": 64, // 1フレームの画像サイズ（縦）
-        "cols": 6, // フレーム数（横）
-        "rows": 3, // フレーム数（縦）
-      },
-      // アニメーション情報
-      "animations" : {
-        "walk": { // アニメーション名
-          "frames": [12,13,14], // フレーム番号範囲
-          "next": "walk", // 次のアニメーション
-          "frequency": 2, // アニメーション間隔
-        },
-      }
-    },
-  }
+  // // スプライトシート
+  // spritesheet: {
+  //   "test_ss":
+  //   {
+  //     // フレーム情報
+  //     "frame": {
+  //       "width": 64, // 1フレームの画像サイズ（横）
+  //       "height": 64, // 1フレームの画像サイズ（縦）
+  //       "cols": 6, // フレーム数（横）
+  //       "rows": 3, // フレーム数（縦）
+  //     },
+  //     // アニメーション情報
+  //     "animations" : {
+  //       "walk": { // アニメーション名
+  //         "frames": [12,13,14], // フレーム番号範囲
+  //         "next": "walk", // 次のアニメーション
+  //         "frequency": 2, // アニメーション間隔
+  //       },
+  //     }
+  //   },
+  // }
 };
 
 // MainScene クラスを定義
@@ -63,16 +65,21 @@ phina.define('MainScene', {
     // アリ生成
     this.ant = ant().addChildTo(this);
     
-    // テストスプライト画像作成
-    var sprite = Sprite('test', 64, 64).addChildTo(this);
-    // スプライトにフレームアニメーションをアタッチ
-    var anim = FrameAnimation('test_ss').attachTo(sprite);
-    // アニメーションを指定
-    anim.gotoAndPlay('walk');
-    // 初期位置
-    sprite.x = this.gridX.center();
-    sprite.y = this.gridY.center();
+    // // テストスプライト画像作成
+    // var sprite = Sprite('test', 64, 64).addChildTo(this);
+    // // スプライトにフレームアニメーションをアタッチ
+    // var anim = FrameAnimation('test_ss').attachTo(sprite);
+    // // アニメーションを指定
+    // anim.gotoAndPlay('walk');
+    // // 初期位置
+    // sprite.x = this.gridX.center();
+    // sprite.y = this.gridY.center();
   },
+  update: function() {
+    if (foodFlag === 3) {
+      FOOD().addChildTo(this);//餌を探しに行った時餌出現
+    }
+  }
 });
 
 
@@ -86,6 +93,7 @@ phina.define('menuButton', {
     this.superInit();
     //メニュー背景
     Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    
     //餌を探しに行くボタン
     var feedButton = Button({
       text: '餌を探しに行く',
@@ -98,6 +106,7 @@ phina.define('menuButton', {
     //ボタンを押した時クエストバー出現
     feedButton.on('click', function() {
       questBar(20,645).addChildTo(this);
+      foodFlag = 2;
     }.bind(this));
 
     //餌を回収するボタン
@@ -112,6 +121,9 @@ phina.define('menuButton', {
     //ボタンを押した時クエストバー出現
     antButton.on('click', function() {
       questBar(20,735).addChildTo(this);
+      if (foodFlag === 3) {
+        foodFlag = 4;
+      }
     }.bind(this));
   },
 });
@@ -143,6 +155,36 @@ phina.define('ant', {
       // 速度を反転する
       this.vy *= -1;
     }
+    // 餌が出現してたら餌を回収しに行く
+    if (foodFlag === 4) {
+      foodFlag = 5;
+      this.ant.tweener.moveTo(100,100,3000)
+        .call(function() {
+          //餌の回収完了
+          foodFlag = 0;
+          console.log('finish');
+        })
+        .moveTo(300,300,3000)
+        .play();
+    }
+  },
+});
+
+ /*
+ * えさ
+ */
+phina.define('FOOD', {
+  superClass: 'DisplayElement',
+
+  init: function() {
+    this.superInit();
+    this.food = Sprite('food').addChildTo(this).setPosition(100,100);
+  },
+
+  update: function(app) {
+    if (foodFlag === 0) {
+      this.food.remove();
+    }
   },
 });
 
@@ -167,6 +209,9 @@ phina.define('questBar', {
     if (this.bar.width >= 300) {
       this.bar.width = 300;
       this.remove();
+      if (foodFlag === 2) {
+        foodFlag = 3;//餌を出現させる
+      }
     }
   },
 });
