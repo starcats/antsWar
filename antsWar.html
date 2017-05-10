@@ -64,10 +64,6 @@ phina.define('MainScene', {
     }).addChildTo(this).setPosition(320,50);
   },
   update: function() {
-    if (foodFlag === 2) {
-      FOOD().addChildTo(this);//餌を探しに行った時餌出現
-      foodFlag = 3;
-    }
     this.food.text = "餌を集めた数: " + foodCount;　
   },
 });
@@ -170,11 +166,10 @@ phina.define('foodMenu', {
       height: 70,
       fontSize: 25,
     }).addChildTo(this.buttonGroup).setPosition(480,575);
-
     //ボタンを押した時クエストバー出現
     this.feedButton.on('click', function() {
-      questBar(20,575).addChildTo(this);
-      QUESTTIME = 10;
+      ant(20,575).addChildTo(this);
+      QUESTTIME = 1;
       foodFlag = 1;
     }.bind(this));
 
@@ -334,73 +329,57 @@ phina.define('battleMenu', {
 phina.define('ant', {
   superClass: 'DisplayElement',
 
-  init: function() {
-    this.superInit();
-    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
-    
-  },
-
-  update: function(app) {
-    // 餌が出現してたら餌を回収しに行く
-    if (foodFlag === 4) {
-      foodFlag = 5;
-      this.ant.tweener.moveTo(100,100,3000)
-        .call(function() {
-          foodFlag = 0;
-        })
-        .moveTo(300,300,3000)
-        .call(function() {
-          //餌の回収完了
-          foodCount++;
-        })
-        .play();
-    }
-  },
-});
-
- /*
- * えさ
- */
-phina.define('FOOD', {
-  superClass: 'DisplayElement',
-
-  init: function() {
-    this.superInit();
-    this.food = Sprite('food').addChildTo(this).setPosition(100,100);
-  },
-
-  update: function(app) {
-    if (foodFlag === 0) {
-      this.food.remove();
-    }
-  },
-});
-
- /*
- * クエスト進捗バー
- */
-phina.define('questBar', {
-  superClass: 'DisplayElement',
   init: function(x,y) {
     this.superInit();
+    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
     this.bar = Shape().addChildTo(this).setOrigin(0,0.5);
-    this.color
     this.bar.x = x;
     this.bar.y = y;
     this.bar.width = 0;
     this.bar.maxWidth = 300;
     this.bar.height = 40;
-    this.count = 0
-
+    this.food = Sprite('food');
+    // foodの位置を管理
+    this.foodGroup = DisplayElement().addChildTo(this);
   },
+
   update: function(app) {
+    console.log(foodFlag);
+    // 餌が出現してたら餌を回収しに行く
+    var self = this;
+    if (foodFlag === 4) {
+      this.foodGroup.children.each(function(child){
+        self.ant.tweener.moveTo(child.x,child.y,3000)
+          .call(function(){
+            foodFlag = 0;
+          })
+          .moveTo(300,300,3000)
+          .call(function(){
+            self.ant.remove();
+            self.remove();
+            foodCount++;
+          })
+          .play();
+      });
+    }
+    // クエストバー管理
     this.bar.width += this.bar.maxWidth / fps / QUESTTIME;
     if (this.bar.width >= 300) {
       this.bar.width = 300;
-      this.remove();
+      this.bar.remove();
       if (foodFlag === 1) {
         foodFlag = 2;//餌を出現させる
       }
+    }
+
+    // 餌を出現させる
+    if (foodFlag === 2) {
+      this.food.addChildTo(this.foodGroup).setPosition(Math.randint(40,600),Math.randint(40,500));//餌を探しに行った時餌出現
+      foodFlag = 3;
+    }
+    // 餌が消える
+    if (foodFlag === 0) {
+      this.food.remove();
     }
   },
 });
