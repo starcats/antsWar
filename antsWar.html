@@ -29,34 +29,15 @@ var foodFlag = 0;
 var ASSETS = {
   image: {
     bg: 'images/antsWar_bg.png',
-    menu: 'images/antsWar_menu.png',
+    foodMenu: 'images/antsWar_foodMenu.png',
     menu2: 'images/antsWar_menu2.png',
+    menuButton: 'images/antsWar_menuButton.png',
+    menuBg: 'images/antsWar_menuBg.png',
     ant: 'images/antsWar_ant.png',
     test: 'images/antsWar_test.png',
     food: 'images/antsWar_sakuranbo.png',
     suana: 'images/antsWar_suana.png',
   },
-  // // スプライトシート
-  // spritesheet: {
-  //   "test_ss":
-  //   {
-  //     // フレーム情報
-  //     "frame": {
-  //       "width": 64, // 1フレームの画像サイズ（横）
-  //       "height": 64, // 1フレームの画像サイズ（縦）
-  //       "cols": 6, // フレーム数（横）
-  //       "rows": 3, // フレーム数（縦）
-  //     },
-  //     // アニメーション情報
-  //     "animations" : {
-  //       "walk": { // アニメーション名
-  //         "frames": [12,13,14], // フレーム番号範囲
-  //         "next": "walk", // 次のアニメーション
-  //         "frequency": 2, // アニメーション間隔
-  //       },
-  //     }
-  //   },
-  // }
 };
 
 // MainScene クラスを定義
@@ -71,7 +52,7 @@ phina.define('MainScene', {
     this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
     this.suana = Sprite('suana',100,100).addChildTo(this).setPosition(300,300);
     // メニューボタン生成
-    this.menu = menuButton().addChildTo(this);
+    this.menuButton = MENUBUTTON().addChildTo(this);
     // アリ生成
     this.ant = ant().addChildTo(this);
     // ラベル表示
@@ -80,15 +61,6 @@ phina.define('MainScene', {
       fill: 'white',
       fontSize: 30,
     }).addChildTo(this).setPosition(320,50);
-    // // テストスプライト画像作成
-    // var sprite = Sprite('test', 64, 64).addChildTo(this);
-    // // スプライトにフレームアニメーションをアタッチ
-    // var anim = FrameAnimation('test_ss').attachTo(sprite);
-    // // アニメーションを指定
-    // anim.gotoAndPlay('walk');
-    // // 初期位置
-    // sprite.x = this.gridX.center();
-    // sprite.y = this.gridY.center();
   },
   update: function() {
     if (foodFlag === 2) {
@@ -98,17 +70,83 @@ phina.define('MainScene', {
   },
 });
 
-
  /*
  * メニューボタン
  */
-phina.define('menuButton', {
+phina.define('MENUBUTTON', {
   superClass: 'DisplayElement',
 
   init: function() {
     this.superInit();
+    var buttonX = 20;
+    var buttonY = 890;
+    var buttonWidth = 10 + 130 + 10;//左右は余白
+    var buttonHeight = 10 + 50 + 10;//左右は余白
+    var buttonPositionX = buttonWidth / 2;
+    var buttonPositionY = buttonY + buttonHeight / 2;
     //メニュー背景
-    this.foodmenu = Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    var bg = Sprite('menuBg').addChildTo(this).setOrigin(0,0).setPosition(0,buttonY);
+    var food = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
+    var upgrade = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
+    var army = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
+    var battle = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
+    // ラベル表示
+    this.label = Label({
+      text: '',
+      fill: 'white',
+      fontSize: 30,
+    });
+    Label({text: "food",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
+    Label({text: "upgrade",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
+    Label({text: "army",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
+    Label({text: "battle",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
+    // タッチ可能にする
+    food.setInteractive(true);
+    upgrade.setInteractive(true);
+    army.setInteractive(true);
+    battle.setInteractive(true);
+    // 各メニュー読み込み
+    this.menuGroup = DisplayElement().addChildTo(this);
+    this.foodMenu = foodMenu(0,530).addChildTo(this.menuGroup);
+    this.upgradeMenu = upgradeMenu(0,530).addChildTo(this.menuGroup);
+    this.upgradeMenu.hide();
+    // 各種ボタン
+    var self = this;
+    food.on('pointstart', function() {
+      console.log("food")
+      self.menuGroup.children.each(function(child) {
+        child.hide();
+      });
+      self.foodMenu.show();
+    });
+    upgrade.on('pointstart', function() {
+      console.log("upgrade")
+      self.menuGroup.children.each(function(child) {
+        child.hide();
+      });
+      self.upgradeMenu.show();
+    });
+    army.on('pointstart', function() {
+      console.log("army")
+    });
+    battle.on('pointstart', function() {
+      console.log("battle")
+    });
+
+  },
+});
+
+
+ /*
+ * 餌やり画面
+ */
+phina.define('foodMenu', {
+  superClass: 'DisplayElement',
+
+  init: function(x,y) {
+    this.superInit();
+    //メニュー背景
+    this.foodMenu = Sprite('foodMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
     
     //餌を探しに行くボタン
     var feedButton = Button({
@@ -118,10 +156,10 @@ phina.define('menuButton', {
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,645);
+    }).addChildTo(this).setPosition(480,575);
     //ボタンを押した時クエストバー出現
     feedButton.on('click', function() {
-      questBar(20,645).addChildTo(this);
+      questBar(20,575).addChildTo(this);
       foodFlag = 1;
     }.bind(this));
 
@@ -133,30 +171,11 @@ phina.define('menuButton', {
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,735);
-    //ボタンを押した時クエストバー出現
+    }).addChildTo(this).setPosition(480,665);
     antButton.on('click', function() {
-      //questBar(20,735).addChildTo(this);
       if (foodFlag === 2) {
         foodFlag = 3;
       }
-    }.bind(this));
-    //メニューを変えるボタン
-    var menuChange = Button({
-      text: '戦いに行く',
-      fill: 'rgb(100,100,100)',
-      stroke: "white",
-      width: 250,
-      height: 70,
-      fontSize: 25,
-    }).addChildTo(this).setPosition(480,825);
-    //ボタンを押した時クエストバー出現
-    var self = this;
-    menuChange.on('click', function() {
-      //questBar(20,735).addChildTo(this);
-
-      console.log("ok");
-      menuButton2().addChildTo(this);
     }.bind(this));
   },
 });
@@ -164,13 +183,13 @@ phina.define('menuButton', {
 /*
  * メニューボタン2
  */
-phina.define('menuButton2', {
+phina.define('upgradeMenu', {
   superClass: 'DisplayElement',
 
-  init: function() {
+  init: function(x,y) {
     this.superInit();
     //メニュー背景
-    this.foodmenu2 = Sprite('menu2',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    this.foodmenu2 = Sprite('menu2',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
     //メニューを変えるボタン
     var menuChange = Button({
       text: '巣に戻る',
@@ -179,11 +198,10 @@ phina.define('menuButton2', {
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,915);
+    }).addChildTo(this).setPosition(480,575);
     //ボタンを押した時クエストバー出現
     var self = this;
     menuChange.on('click', function() {
-      //questBar(20,735).addChildTo(this);
       this.hide();
       console.log("ok");
       menuButton().addChildTo(this);
@@ -214,7 +232,7 @@ phina.define('ant', {
       // 速度を反転する
       this.vx *= -1;
     }
-    if (this.ant.top < 0 || 600 < this.ant.bottom) {
+    if (this.ant.top < 0 || 530 < this.ant.bottom) {
       // 速度を反転する
       this.vy *= -1;
     }
