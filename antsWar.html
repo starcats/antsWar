@@ -15,7 +15,7 @@
 // グローバルに展開
 phina.globalize();
 
-var quest1Time = 1;//秒
+var quest1Time = 10;//秒
 var fps = 30;
 var foodCount = 0;
 var foodFlag = 0;
@@ -28,12 +28,13 @@ var foodFlag = 0;
 
 var ASSETS = {
   image: {
-    bg: 'images/bg.png',
-    menu: 'images/menu.png',
-    ant: 'images/ant.png',
-    test: 'images/test.png',
-    food: 'images/sakuranbo.png',
-    suana: 'images/suana.png',
+    bg: 'images/antsWar_bg.png',
+    menu: 'images/antsWar_menu.png',
+    menu2: 'images/antsWar_menu2.png',
+    ant: 'images/antsWar_ant.png',
+    test: 'images/antsWar_test.png',
+    food: 'images/antsWar_sakuranbo.png',
+    suana: 'images/antsWar_suana.png',
   },
   // // スプライトシート
   // spritesheet: {
@@ -107,7 +108,7 @@ phina.define('menuButton', {
   init: function() {
     this.superInit();
     //メニュー背景
-    Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    this.foodmenu = Sprite('menu',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
     
     //餌を探しに行くボタン
     var feedButton = Button({
@@ -135,10 +136,57 @@ phina.define('menuButton', {
     }).addChildTo(this).setPosition(480,735);
     //ボタンを押した時クエストバー出現
     antButton.on('click', function() {
-      questBar(20,735).addChildTo(this);
+      //questBar(20,735).addChildTo(this);
       if (foodFlag === 2) {
         foodFlag = 3;
       }
+    }.bind(this));
+    //メニューを変えるボタン
+    var menuChange = Button({
+      text: '戦いに行く',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this).setPosition(480,825);
+    //ボタンを押した時クエストバー出現
+    var self = this;
+    menuChange.on('click', function() {
+      //questBar(20,735).addChildTo(this);
+
+      console.log("ok");
+      menuButton2().addChildTo(this);
+    }.bind(this));
+  },
+});
+
+/*
+ * メニューボタン2
+ */
+phina.define('menuButton2', {
+  superClass: 'DisplayElement',
+
+  init: function() {
+    this.superInit();
+    //メニュー背景
+    this.foodmenu2 = Sprite('menu2',640,360).addChildTo(this).setOrigin(0,0).setPosition(0,600);
+    //メニューを変えるボタン
+    var menuChange = Button({
+      text: '巣に戻る',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this).setPosition(480,915);
+    //ボタンを押した時クエストバー出現
+    var self = this;
+    menuChange.on('click', function() {
+      //questBar(20,735).addChildTo(this);
+      this.hide();
+      console.log("ok");
+      menuButton().addChildTo(this);
     }.bind(this));
   },
 });
@@ -213,6 +261,7 @@ phina.define('questBar', {
   init: function(x,y) {
     this.superInit();
     this.bar = Shape().addChildTo(this).setOrigin(0,0.5);
+    this.color
     this.bar.x = x;
     this.bar.y = y;
     this.bar.width = 0;
