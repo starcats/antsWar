@@ -56,8 +56,6 @@ phina.define('MainScene', {
     this.suana = Sprite('suana',100,100).addChildTo(this).setPosition(300,300);
     // メニューボタン生成
     this.menuButton = MENUBUTTON().addChildTo(this);
-    // アリ生成
-    this.ant = ant().addChildTo(this);
     // ラベル表示
     this.food = Label({
       text: '',
@@ -338,26 +336,11 @@ phina.define('ant', {
 
   init: function() {
     this.superInit();
-    // ランダムに歩く
-    this.vx = Random.randint(-3, 3);
-    this.vy = Random.randint(-3, 3);
-    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(340,250);
+    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
     
   },
 
   update: function(app) {
-    this.ant.x += this.vx;
-    this.ant.y += this.vy;
-    // 画面端との判定
-    if (this.ant.left < 0 || 640 < this.ant.right) {
-      // 速度を反転する
-      this.vx *= -1;
-      
-    }
-    if (this.ant.top < 0 || 530 < this.ant.bottom) {
-      // 速度を反転する
-      this.vy *= -1;
-    }
     // 餌が出現してたら餌を回収しに行く
     if (foodFlag === 4) {
       foodFlag = 5;
