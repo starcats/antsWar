@@ -15,7 +15,7 @@
 // グローバルに展開
 phina.globalize();
 
-var quest1Time = 10;//秒
+var QUESTTIME = 10;//秒
 var fps = 30;
 var foodCount = 0;
 var foodFlag = 0;
@@ -23,14 +23,17 @@ var foodFlag = 0;
   //  0: 消える デフォルト
   //  1: 餌を探しに行くを押すと1になる
   //  2: クエストが終了すると2になり餌出現
-  //  3: 3の時に回収するを押すとアリが回収しに行く
-  //  4: 回収アクションが重複しないように
+  //  3: 3の時に回収するを押せる
+  //  4: アリが餌を回収しに行く
+  //  5: 回収アクションが重複しないように
 
 var ASSETS = {
   image: {
     bg: 'images/antsWar_bg.png',
     foodMenu: 'images/antsWar_foodMenu.png',
-    menu2: 'images/antsWar_menu2.png',
+    upgradeMenu: 'images/antsWar_upgradeMenu.png',
+    armyMenu: 'images/antsWar_armyMenu.png',
+    battleMenu: 'images/antsWar_battleMenu.png',
     menuButton: 'images/antsWar_menuButton.png',
     menuBg: 'images/antsWar_menuBg.png',
     ant: 'images/antsWar_ant.png',
@@ -65,6 +68,7 @@ phina.define('MainScene', {
   update: function() {
     if (foodFlag === 2) {
       FOOD().addChildTo(this);//餌を探しに行った時餌出現
+      foodFlag = 3;
     }
     this.food.text = "餌を集めた数: " + foodCount;　
   },
@@ -108,8 +112,9 @@ phina.define('MENUBUTTON', {
     // 各メニュー読み込み
     this.menuGroup = DisplayElement().addChildTo(this);
     this.foodMenu = foodMenu(0,530).addChildTo(this.menuGroup);
-    this.upgradeMenu = upgradeMenu(0,530).addChildTo(this.menuGroup);
-    this.upgradeMenu.hide();
+    this.upgradeMenu = upgradeMenu(0,530).addChildTo(this.menuGroup).hide();
+    this.armyMenu = armyMenu(0,530).addChildTo(this.menuGroup).hide();
+    this.battleMenu = battleMenu(0,530).addChildTo(this.menuGroup).hide();
     // 各種ボタン
     var self = this;
     food.on('pointstart', function() {
@@ -128,9 +133,17 @@ phina.define('MENUBUTTON', {
     });
     army.on('pointstart', function() {
       console.log("army")
+      self.menuGroup.children.each(function(child) {
+        child.hide();
+      });
+      self.armyMenu.show();
     });
     battle.on('pointstart', function() {
       console.log("battle")
+      self.menuGroup.children.each(function(child) {
+        child.hide();
+      });
+      self.battleMenu.show();
     });
 
   },
@@ -147,41 +160,58 @@ phina.define('foodMenu', {
     this.superInit();
     //メニュー背景
     this.foodMenu = Sprite('foodMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
-    
+    // ボタン関連Child
+    this.buttonGroup = DisplayElement().addChildTo(this);
+
     //餌を探しに行くボタン
-    var feedButton = Button({
+    this.feedButton = Button({
       text: '餌を探す',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,575);
+    }).addChildTo(this.buttonGroup).setPosition(480,575);
+
     //ボタンを押した時クエストバー出現
-    feedButton.on('click', function() {
+    this.feedButton.on('click', function() {
       questBar(20,575).addChildTo(this);
+      QUESTTIME = 10;
       foodFlag = 1;
     }.bind(this));
 
     //餌を回収するボタン
-    var antButton = Button({
+    this.antButton = Button({
       text: '餌を回収する',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,665);
-    antButton.on('click', function() {
-      if (foodFlag === 2) {
-        foodFlag = 3;
+    }).addChildTo(this.buttonGroup).setPosition(480,665);
+    this.antButton.on('click', function() {
+      if (foodFlag === 3) {
+        foodFlag = 4;
       }
     }.bind(this));
+  },
+
+  update:function() {
+    // hideの時タッチ判定をオフにする
+    if (this.visible === false) {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(false);
+      });
+    } else {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(true);
+      });
+    }
   },
 });
 
 /*
- * メニューボタン2
+ * アップグレード画面
  */
 phina.define('upgradeMenu', {
   superClass: 'DisplayElement',
@@ -189,23 +219,114 @@ phina.define('upgradeMenu', {
   init: function(x,y) {
     this.superInit();
     //メニュー背景
-    this.foodmenu2 = Sprite('menu2',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
-    //メニューを変えるボタン
+    this.foodmenu2 = Sprite('upgradeMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
+    // ボタン関連Child
+    this.buttonGroup = DisplayElement().addChildTo(this);
+    //ボタン生成
     var menuChange = Button({
-      text: '巣に戻る',
+      text: '餌を探す速度向上',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
       height: 70,
       fontSize: 25,
-    }).addChildTo(this).setPosition(480,575);
-    //ボタンを押した時クエストバー出現
-    var self = this;
+    }).addChildTo(this.buttonGroup).setPosition(480,575);
+    //ボタンを押した時
     menuChange.on('click', function() {
-      this.hide();
-      console.log("ok");
-      menuButton().addChildTo(this);
+      console.log("速度向上");
     }.bind(this));
+  },
+  update:function() {
+    // hideの時タッチ判定をオフにする
+    if (this.visible === false) {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(false);
+      });
+    } else {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(true);
+      });
+    }
+  },
+});
+
+/*
+ * 兵士生産画面
+ */
+phina.define('armyMenu', {
+  superClass: 'DisplayElement',
+
+  init: function(x,y) {
+    this.superInit();
+    // メニュー背景
+    this.foodmenu2 = Sprite('armyMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
+    // ボタン関連Childボタンを生成したらここに格納する
+    this.buttonGroup = DisplayElement().addChildTo(this);
+    // ボタン生成
+    var menuChange = Button({
+      text: '兵隊アリを生産',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this.buttonGroup).setPosition(480,575);
+    // ボタンを押した時
+    menuChange.on('click', function() {
+      console.log("アリ生産");
+    }.bind(this));
+  },
+  update:function() {
+    // hideの時タッチ判定をオフにする
+    if (this.visible === false) {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(false);
+      });
+    } else {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(true);
+      });
+    }
+  },
+});
+
+/*
+ * 戦闘画面
+ */
+phina.define('battleMenu', {
+  superClass: 'DisplayElement',
+
+  init: function(x,y) {
+    this.superInit();
+    // メニュー背景
+    this.foodmenu2 = Sprite('battleMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
+    // ボタン関連Childボタンを生成したらここに格納する
+    this.buttonGroup = DisplayElement().addChildTo(this);
+    // ボタン生成
+    var menuChange = Button({
+      text: '兵隊アリ出陣',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 250,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this.buttonGroup).setPosition(480,575);
+    // ボタンを押した時
+    menuChange.on('click', function() {
+      console.log("出陣");
+    }.bind(this));
+  },
+  update:function() {
+    // hideの時タッチ判定をオフにする
+    if (this.visible === false) {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(false);
+      });
+    } else {
+      this.buttonGroup.children.each(function(child) {
+        child.setInteractive(true);
+      });
+    }
   },
 });
 
@@ -231,14 +352,15 @@ phina.define('ant', {
     if (this.ant.left < 0 || 640 < this.ant.right) {
       // 速度を反転する
       this.vx *= -1;
+      
     }
     if (this.ant.top < 0 || 530 < this.ant.bottom) {
       // 速度を反転する
       this.vy *= -1;
     }
     // 餌が出現してたら餌を回収しに行く
-    if (foodFlag === 3) {
-      foodFlag = 4;
+    if (foodFlag === 4) {
+      foodFlag = 5;
       this.ant.tweener.moveTo(100,100,3000)
         .call(function() {
           foodFlag = 0;
@@ -289,7 +411,7 @@ phina.define('questBar', {
 
   },
   update: function(app) {
-    this.bar.width += this.bar.maxWidth / fps / quest1Time;
+    this.bar.width += this.bar.maxWidth / fps / QUESTTIME;
     if (this.bar.width >= 300) {
       this.bar.width = 300;
       this.remove();
