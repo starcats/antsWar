@@ -17,8 +17,11 @@ phina.globalize();
 
 var QUESTTIME = 10;//秒
 var fps = 30;
+var test = 0;
 var foodCount = 0;
 var foodFlag = 0;
+var foodLimit = 0;
+var screenFoodCount = 0;
   //  foodFlag 説明
   //  0: 消える デフォルト
   //  1: 餌を探しに行くを押すと1になる
@@ -26,6 +29,7 @@ var foodFlag = 0;
   //  3: 3の時に回収するを押せる
   //  4: アリが餌を回収しに行く
   //  5: 回収アクションが重複しないように
+var antButtonFlag = 0;
 
 var ASSETS = {
   image: {
@@ -183,9 +187,7 @@ phina.define('foodMenu', {
       fontSize: 25,
     }).addChildTo(this.buttonGroup).setPosition(480,665);
     this.antButton.on('click', function() {
-      if (foodFlag === 3) {
-        foodFlag = 4;
-      }
+      antButtonFlag=1;
     }.bind(this));
   },
 
@@ -331,57 +333,53 @@ phina.define('ant', {
 
   init: function(x,y) {
     this.superInit();
-    this.ant = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
     this.bar = Shape().addChildTo(this).setOrigin(0,0.5);
     this.bar.x = x;
     this.bar.y = y;
     this.bar.width = 0;
     this.bar.maxWidth = 300;
     this.bar.height = 40;
-    this.food = Sprite('food');
     // foodの位置を管理
     this.foodGroup = DisplayElement().addChildTo(this);
   },
 
   update: function(app) {
-    console.log(foodFlag);
     // 餌が出現してたら餌を回収しに行く
     var self = this;
-    if (foodFlag === 4) {
-      this.foodGroup.children.each(function(child){
-        self.ant.tweener.moveTo(child.x,child.y,3000)
-          .call(function(){
-            foodFlag = 0;
-          })
-          .moveTo(300,300,3000)
-          .call(function(){
-            self.ant.remove();
-            self.remove();
-            foodCount++;
-          })
-          .play();
-      });
+    if (this.foodGroup.children.length - screenFoodCount > 0 && antButtonFlag === 1) {
+      this.foodColect();
+      antButtonFlag = 0;
     }
     // クエストバー管理
-    this.bar.width += this.bar.maxWidth / fps / QUESTTIME;
-    if (this.bar.width >= 300) {
-      this.bar.width = 300;
-      this.bar.remove();
-      if (foodFlag === 1) {
-        foodFlag = 2;//餌を出現させる
+    if (foodFlag === 1) {
+      this.bar.width += this.bar.maxWidth / fps / QUESTTIME;
+      if (this.bar.width >= 300) {
+        //this.bar.width = 0;
+        this.bar.remove();
+        Sprite('food').addChildTo(this.foodGroup).setPosition(Math.randint(40,600),Math.randint(40,500));//餌を探しに行った時餌出現
+        foodFlag = 2;
       }
     }
-
-    // 餌を出現させる
-    if (foodFlag === 2) {
-      this.food.addChildTo(this.foodGroup).setPosition(Math.randint(40,600),Math.randint(40,500));//餌を探しに行った時餌出現
-      foodFlag = 3;
-    }
-    // 餌が消える
-    if (foodFlag === 0) {
-      this.food.remove();
-    }
   },
+  foodColect: function() {
+    var self = this;
+    console.log('ok');
+    console.log(this.foodGroup.children.length);
+    var antSprite = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
+    screenFoodCount++;
+    console.log(this.foodGroup.children[screenFoodCount - 1].x);
+    antSprite.tweener.moveTo(this.foodGroup.children[screenFoodCount - 1].x,this.foodGroup.children[screenFoodCount - 1].y,3000)
+      .call(function(){
+        self.foodGroup.children.shift();
+        screenFoodCount--;
+      })
+      .moveTo(300,300,3000)
+      .call(function(){
+        antSprite.remove();
+        foodCount++;
+      })
+      .play();
+  }
 });
 
 
